@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import {
   StyleSheet,
   Text,
@@ -10,15 +11,29 @@ import {
 
 import TodoItem from './TodoItem';
 
-const temporaryTodos = [{
-  id: "1",
-  text: "Hello"
-},{
-  id: "2",
-  text: "World"
-}];
+import {addTodo} from '../actions';
 
 class Main extends React.Component {
+  constructor(props){
+    super(props);
+
+    this.state = {
+      newTodoText: ''
+    };
+  };
+
+  onInputChange = (event) => {
+    this.setState({newTodoText: event.nativeEvent.text});
+  }
+
+  addNewTodo = () => {
+    let { newTodoText } = this.state;
+
+    if(newTodoText && newTodoText != ''){
+      this.setState({newTodoText: ''});
+      this.props.dispatch(addTodo(newTodoText))
+    }
+  };
 
   render(){
     return (
@@ -28,7 +43,14 @@ class Main extends React.Component {
           <Text style={styles.title}>{'Hello World'}</Text>
         </View>
         <View style={styles.inputContainer}>
-          <TextInput style={styles.input}/>
+          <TextInput
+            onChange={this.onInputChange}
+            value={this.state.newTodoText}
+            onSubmitEditing={this.addNewTodo}
+            returnKeyType={'done'}
+            placeholder={'Add New todo'}
+            style={styles.input}
+          />
         </View>
         <ScrollView automaticallyAdjustContentInsets={false}>
           {this.renderTodos()}
@@ -38,12 +60,12 @@ class Main extends React.Component {
   };
 
   renderTodos(){
-    return temporaryTodos.map((todo) => {
+    return this.props.todos.map((todo) => {
       return (
         <TodoItem text={todo.text} key={todo.id} id={todo.id}/>
       )
     });
-  }
+  };
 }
 
 const styles = StyleSheet.create({
@@ -79,4 +101,10 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Main;
+const mapStateToProps = (state) => {
+  return {
+    todos: state.todos
+  };
+}
+
+export default connect(mapStateToProps)(Main);
